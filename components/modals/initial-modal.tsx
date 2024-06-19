@@ -4,12 +4,28 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import FileUpload from "../file-upload";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -21,12 +37,13 @@ const formSchema = z.object({
 });
 
 const IntialModal = () => {
-  const [isMounted,setIsMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setIsMounted(true);
-  },[]);
-  
+  }, []);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,10 +55,18 @@ const IntialModal = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      await axios.post("/api/servers", values);
+
+      form.reset();
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  if(!isMounted){
+  if (!isMounted) {
     return null;
   }
   return (
@@ -61,15 +86,20 @@ const IntialModal = () => {
             <div className="space-y-8 px-6">
               <div className="flex items-center justify-center text-center">
                 <FormField
-                control={form.control}
-                name = "imageUrl"
-                render = {({field}) => (
-                  <FormItem>
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
                       <FormControl>
-                        <FileUpload endpoint="serverImage" value = {field.value} onChange = {field.onChange}/>
+                        <FileUpload
+                          endpoint="serverImage"
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
-                  </FormItem>
-                )}/>
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <FormField
@@ -88,15 +118,15 @@ const IntialModal = () => {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage/>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
             <DialogFooter className="bg-gray-100 px-6 py-4">
-                <Button disabled={isLoading} variant="primary">
-                  Create
-                </Button>
+              <Button disabled={isLoading} variant="primary">
+                Create
+              </Button>
             </DialogFooter>
           </form>
         </Form>
