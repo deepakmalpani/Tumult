@@ -29,7 +29,7 @@ export const SocketProvider = ({children} : {children: React.ReactNode}) => {
     useEffect(() => {
         const socketInstace = (ClientIO as any)(process.env.NEXT_PUBLIC_SITE_URL!, {
             path: "/api/socket/io",
-            addTrailingSlash: true,
+            addTrailingSlash: false,
         });
 
         socketInstace.on("connect", () => {
